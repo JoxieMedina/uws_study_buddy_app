@@ -8,23 +8,32 @@ Written by B00319125
 Python version: 3
 LIBRARIES:
     Python Command Line Interface Tools (CLINT): $ pip3 install clint
+    Reference: https://github.com/kennethreitz/clint/
 
 """
 import os
 from random import randrange
 import pickle
 import pprint as pp
-# Import the library CLINT
+# Import the module textui of the library 'clint' for easy handling of
+# inputs and outputs in the CLI output
 from clint.textui import prompt, puts, colored, indent
+# prompt: print an option prompt for handle a valid option
+# puts: custom print method
+# colored: allow give color to a output
+# indent: allow indent the text output
 
+# Initial state of the requests list
 requests = []
 
 
 class Request():
-    def __init__(self, idrequest):
-        # Setting the defaults values
+    def __init__(self, idrequest):        
+        # Make the requests list with a global scope
         global requests
+        # Getting the requests list with the Requests.pickle file
         requests = get_storage_data('Requests')
+        # Setting the defaults values
         self._request_id = idrequest
         self._first_name = ""
         self._surname = ""
@@ -51,6 +60,7 @@ class Request():
         self._create_request()
         # Update the request list
         requests.append(self._request_id)
+        # Set or create the Requests.pickle file
         set_storage_data('Requests', requests)
         # Create a new file for the new request
         set_storage_data(str(self._request_id), {
@@ -64,11 +74,17 @@ class Request():
             "campus": self._campus,
             "availables_times": '/'.join(self._availables_times)
         })
+        # Display the current requests ingresed
         self._display_all()
 
     def _display_all(self):
-        os.system('clear')
+        """
+            Display all the data of the current request
+        """
+        os.system('clear') # Clear the console
+
         title = "| Your information |"
+        # Creating the output and format it
         output = "  RequestID: {}\n"\
                  "  Name: {} {}\n"\
                  "  Password: {}\n"\
@@ -85,15 +101,24 @@ class Request():
                      self._module,
                      self._year,
                      self._campus)
+        # Create a header banner with the title to show a highlighted output
         header = '+' + '-' * (int(len(output) / 2) - 60) + title + '-' * \
             int((len(output) / 2) - 60) + '+'
+        # The header and footer banners are created calculating the lenth of
+        # the output
         footer = '+' + '-' * (len(header) - 2) + '+'
+        # Append all the available times in one string
         times_string = "    "
         for i in self._availables_times:
             times_string = times_string + "> " + i + '\n    '
+        # Put all the lines in one list
         lines = [header, output, times_string, footer]
+        # Join all
         card = '\n'.join(lines)
+        # Indent with 4 spaces the output
         with indent(4):
+            # Use of the context manager 'with' to use the indent method only
+            # in the line bellows
             puts(card)
 
     def _display_restricted(self):
@@ -101,8 +126,9 @@ class Request():
             Print a restricted view of the request data
             without request id, student name and password.
         """
-        os.system('clear')
+        os.system('clear')# Clear the console
         title = "| Your information |"
+        # Creating the output and format it
         output = "  Programme: {}\n"\
                  "  Module: {}\n"\
                  "  Year: {}\n"\
@@ -112,18 +138,32 @@ class Request():
                      self._module,
                      self._year,
                      self._campus)
+        # Create a header banner with the title to show a highlighted output
         header = '+' + '-' * (int(len(output) / 2) - 40) + title + '-' * \
             int((len(output) / 2) - 40) + '+'
+        # The header and footer banners are created calculating the lenth of
+        # the output
         footer = '+' + '-' * (len(header) - 2) + '+'
+        # Append all the available times in one string
         times_string = "    "
         for i in self._availables_times:
             times_string = times_string + "> " + i + '\n    '
+        # Put all the lines in one list
         lines = [header, output, times_string, footer]
+        # Join all
         card = '\n'.join(lines)
+        # Indent with 4 spaces the output
         with indent(4):
+            # Use of the context manager 'with' to use the indent method only
+            # in the line bellows
             puts(card)
 
     def _create_request(self):
+        """
+            This method allows handle all the input
+            and create a request
+        """
+        # Show the prompts for inputs
         self._first_name = prompt.query("Input First Name: ")
         self._surname = prompt.query("Input Surname: ")
         self._password = prompt.query("Input Password: ")
@@ -138,6 +178,8 @@ class Request():
         # Handle N times availables
         puts(colored.yellow("Availables Times (Duplicates are silently ignored)"))
         opt = 'Yes'
+        # Repeat until the user no longer wants to enter more times
+        # If input a repeated time this will be ignored
         while opt == 'Yes':
             day = prompt.options(
                 "\nSelect a day option", to_clint_options(self._days))
@@ -150,12 +192,16 @@ class Request():
 
 
 def to_clint_options(options):
-    """This function returns the dictionary for prompt options in
-    CLINT
-
-    Returns:
-        A Dictionary of options to clint prompt
     """
+        This method only format a list to be
+        acceptable for the prompt.options method
+
+        Args:
+            A list of options
+        Returns:
+            A list of sets with prompt.options format
+    """
+    # Create a set with number key
     temp = dict(zip(range(1, len(options) + 1), options))
     opts = []
     for key in temp:
@@ -173,7 +219,10 @@ def get_storage_data(filename):
     temp = []
     temp_path = "./" + filename + ".pickle"
     if os.path.exists(temp_path):
+        # Use a try  / finally exceptions for if something goes wrong
         try:
+            # The context manager 'with' permits no worry about closing the
+            # file
             with open(filename + ".pickle", mode="rb") as storage:
                 temp = pickle.load(storage)
         finally:
@@ -190,7 +239,7 @@ def set_storage_data(filename, data):
 
     """
     # Saving Persistend data into a file
-    # The with snippet permits no worry about closing the file
+    # The context manager 'with' permits no worry about closing the file
     with open(filename + ".pickle", mode="wb") as storage:
         return pickle.dump(data, storage)
 
@@ -211,9 +260,11 @@ def main():
     """
         Main fuction
     """
+    # Getting the menu option for the menu prompt
     menu_opt = prompt.options(
         colored.green("Welcome to UWS STUDY BUDDY"),
         to_clint_options(["Create New Request", "Exit"]))
+    # Repeat until the user choose the 'Exit' option from the prompt
     while menu_opt != "Exit":
         if menu_opt == "Create New Request":
             request_id = generate_random()
@@ -226,6 +277,7 @@ def main():
             pp.pprint(requests_file)
             puts(colored.blue(str(request_id) + ".pickle file content: \n"))
             pp.pprint(request_created)
+            # Show the menu options again
             menu_opt = prompt.options(
                 colored.green("\nUWS STUDY BUDDY"),
                 to_clint_options(["Create New Request", "Exit"]))

@@ -8,6 +8,7 @@ Written by B00319125
 Python version: 3
 LIBRARIES:
     Python Command Line Interface Tools (CLINT): $ pip3 install clint
+    Reference: https://github.com/kennethreitz/clint/
 
 """
 import os
@@ -15,18 +16,29 @@ from time import sleep
 from random import randrange, random
 import pickle
 
-# Import the library CLINT
+# Import the module textui of the library 'clint' for easy handling of
+# inputs and outputs in the CLI output
 from clint.textui import prompt, puts, colored, indent, progress, validators
+# prompt: print an option prompt for handle a valid option
+# puts: custom print method
+# colored: allow give color to a output
+# indent: allow indent the text output
+# progress: print a progress state in the output
+# validators: allow validate an input with a regular expresion for example
 
+# Initial state of the requests list
 requests = []
 
 
 class Request():
     def __init__(self, idrequest):
-        # Setting the defaults values
+        # Make the requests list with a global scope
         global requests
+        # Getting the requests list with the Requests.pickle file
         requests = get_storage_data('Requests')
+        # Check an print if the any file was deleted
         puts(colored.yellow("\n".join(self._check_request_files())))
+        # Setting the defaults values
         self._request_id = idrequest
         self._first_name = ""
         self._surname = ""
@@ -53,6 +65,7 @@ class Request():
         self._create_request()
         # Update the request list
         requests.append(str(self._request_id))
+        # Set or create the Requests.pickle file
         set_storage_data('Requests', requests)
         # Create a new file for the new request
         self._current_request = {
@@ -66,16 +79,23 @@ class Request():
             "campus": self._campus,
             "availables_times": '/'.join(self._availables_times)
         }
+        # Set or create the current request file
         set_storage_data(str(self._request_id), self._current_request)
+        # Display the current requests ingresed
         self._display_all()
+        # Find if the current request has any match in all requests
         matches = find_matches(self._current_request)
         if matches:
+            # Print a colored (cyan) announcement informing that matches were
+            # found
             puts(colored.cyan(str(len(matches)) + " matches were found!"))
             _print_matches(matches)
+         # Show a prompt of options asking if want to see the matches found
             match_opt = prompt.options(
                 colored.green("Do you want tho see the matches?"),
                 to_clint_options(["Yes", "No"]))
             if match_opt == "Yes":
+                # If yes call the method that shows the matches
                 _view_matches(matches)
             else:
                 pass
@@ -83,8 +103,12 @@ class Request():
             pass
 
     def _display_all(self):
-        os.system('clear')
+        """
+            Display all the data of the current request
+        """
+        os.system('clear')  # Clear the console
         title = "| Your information |"
+        # Creating the output and format it
         output = "  RequestID: {}\n"\
                  "  Name: {} {}\n"\
                  "  Password: {}\n"\
@@ -101,15 +125,24 @@ class Request():
                      self._module,
                      self._year,
                      self._campus)
+        # Create a header banner with the title to show a highlighted output
         header = '+' + '-' * (int(len(output) / 2) - 60) + title + '-' * \
             int((len(output) / 2) - 60) + '+'
+        # The header and footer banners are created calculating the lenth of
+        # the output
         footer = '+' + '-' * (len(header) - 2) + '+'
+        # Append all the available times in one string
         times_string = "    "
         for i in self._availables_times:
             times_string = times_string + "> " + i + '\n    '
+        # Put all the lines in one list
         lines = [header, output, times_string, footer]
+        # Join all
         card = '\n'.join(lines)
+        # Indent with 4 spaces the output
         with indent(4):
+            # Use of the context manager 'with' to use the indent method only
+            # in the line bellows
             puts(card)
 
     def _display_restricted(self):
@@ -117,8 +150,9 @@ class Request():
             Print a restricted view of the request data
             without request id, student name and password.
         """
-        os.system('clear')
+        os.system('clear')  # Clear the console
         title = "| Your information |"
+        # Creating the output and format it
         output = "  Programme: {}\n"\
                  "  Module: {}\n"\
                  "  Year: {}\n"\
@@ -128,28 +162,52 @@ class Request():
                      self._module,
                      self._year,
                      self._campus)
+        # Create a header banner with the title to show a highlighted output
         header = '+' + '-' * (int(len(output) / 2) - 40) + title + '-' * \
             int((len(output) / 2) - 40) + '+'
+        # The header and footer banners are created calculating the lenth of
+        # the output
         footer = '+' + '-' * (len(header) - 2) + '+'
+        # Append all the available times in one string
         times_string = "    "
         for i in self._availables_times:
             times_string = times_string + "> " + i + '\n    '
+        # Put all the lines in one list
         lines = [header, output, times_string, footer]
+        # Join all
         card = '\n'.join(lines)
+        # Indent with 4 spaces the output
         with indent(4):
+            # Use of the context manager 'with' to use the indent method only
+            # in the line bellows
             puts(card)
 
     def _check_request_files(self):
-        errors = []
+        """
+            Check if the request files listed in the Requests.pickle file
+            are properly created
+
+            Returns:
+                An errors list if one or more files not exists
+        """
+        errors = []  # Created and empty list
         if requests:
             for request_id in requests:
                 temp_path = "./" + str(request_id) + ".pickle"
+                # Method that validate if the file with the passed path as
+                # argument exists
                 if not os.path.exists(temp_path):
+                     # Append an error string if the file not exists
                     errors.append("Warning: File for the request " +
                                   str(request_id) + " does not exists!")
         return errors
 
     def _create_request(self):
+        """
+            This method allows handle all the input
+            and create a request
+        """
+        # Show the prompts for inputs
         self._first_name = prompt.query("Input First Name: ")
         self._surname = prompt.query("Input Surname: ")
         self._password = prompt.query("Input Password: ")
@@ -164,6 +222,8 @@ class Request():
         # Handle N times availables
         puts(colored.yellow("Availables Times (Duplicates are silently ignored)"))
         opt = 'Yes'
+        # Repeat until the user no longer wants to enter more times
+        # If input a repeated time this will be ignored
         while opt == 'Yes':
             day = prompt.options(
                 "\nSelect a day option", to_clint_options(self._days))
@@ -176,7 +236,16 @@ class Request():
 
 
 def _to_match_options(options):
-    #"Request " + str(ma["request_id"]) + " Rank: " + str(ma["rank"]))
+    """
+        This method only format a list to be
+        acceptable for the prompt.options method
+
+        Args:
+            A list of options
+        Returns:
+            A list of sets with prompt.options format
+    """
+    # Create a set with number key
     temp = dict(zip(range(1, len(options) + 1), options))
     opts = []
     for key in temp:
@@ -187,17 +256,22 @@ def _to_match_options(options):
 
 def find_matches(request):
     """
+        Args:
+            A request to find matches
         Returns:
             A list of matches
     """
     matches = []
+    # Getting the lists of the requests ids
     all_request_ids = get_storage_data('Requests')
     all_saved_requests = []
+    # for each id fund, get the corresponding request file data
     if all_request_ids:
         for id_request in requests:
             if str(id_request) != str(request["request_id"]):
                 all_saved_requests.append(
                     get_storage_data(str(id_request)))
+    # Create a set with only the matching values for evaluate
     matching_values = set(
         {request["campus"], request["programme"], request["module"]})
     matching_times = request["availables_times"]
@@ -228,14 +302,18 @@ def find_matches(request):
 def _print_matches(_matches):
     for match in _matches:
         label = "Request " + str(match["request_id"]) + " Rank:"
+        # Print the matches with a progress effect in the Rank value
         for i in progress.mill(range(match["rank"]), label=label, expected_size=100):
-            sleep(random() * 0.01)
+            sleep(random() * 0.02)
 
 
 def _print_match(match):
     """
-        Print a restricted view of the request data
-        without request id, student name and password.
+            Print all the matches listed in the _matches argument
+            without request id, student name and password.
+
+            Args:
+                Matches list
     """
     _match = get_storage_data(str(match))
     title = "| Your information |"
@@ -262,6 +340,9 @@ def _print_match(match):
 
 
 def _view_matches(_matches):
+    """
+        Show an options prompt of the all matches
+    """
     match = ""
     options = []
     for ma in _matches:
@@ -278,11 +359,14 @@ def _view_matches(_matches):
 
 
 def to_clint_options(options):
-    """This function returns the dictionary for prompt options in
-    CLINT
+    """
+        This method only format a list to be
+        acceptable for the prompt.options method
 
-    Returns:
-        A Dictionary of options to clint prompt
+        Args:
+            A list of options
+        Returns:
+            A list of sets with prompt.options format
     """
     temp = dict(zip(range(1, len(options) + 1), options))
     opts = []
@@ -301,12 +385,15 @@ def get_storage_data(filename):
     temp = []
     temp_path = "./" + filename + ".pickle"
     if os.path.exists(temp_path):
+        # Use a try  / finally exceptions for if something goes wrong
         try:
+            # The context manager 'with' permits no worry about closing the
+            # file
             with open(filename + ".pickle", mode="rb") as storage:
                 temp = pickle.load(storage)
         finally:
             pass
-    if temp == None:
+    if temp is None:
         return []
     return temp
 
@@ -316,7 +403,7 @@ def set_storage_data(filename, data):
 
     """
     # Saving Persistend data into a file
-    # The code snippet permits no worry about closing the file
+    # The context manager 'with' permits no worry about closing the file
     with open(filename + ".pickle", mode="wb") as storage:
         return pickle.dump(data, storage)
 
@@ -429,18 +516,31 @@ def main():
     """
         Main fuction
     """
+    # Getting the menu option for the menu prompt
     menu_opt = do_menu()
+    # Repeat until the user choose the 'Exit' option from the prompt
     while menu_opt != "Exit":
         if menu_opt == "Create New Request":
             request_id = generate_random()
             request = Request(request_id)
+            # Show the menu options again
             menu_opt = do_menu()
         if menu_opt == "Edit a Request":
+            # Show a prompt requesting the Request ID
             request_id = prompt.query(
                 "Input a Request ID: ",
+                # Validate if the request id is a 6 digits number
+                # with the regular expresion ^[0-9]{6,6}$
+                # RegExp Explanation :
+                # ^ : beginning anchor
+                # [0-9] : Accept any digit between 0 and 9
+                # {6,6} : The minimum and maximum value
+                # $ : Exit anchor
                 validators=[validators.RegexValidator("^[0-9]{6,6}$",
                                                       message="Input a 6 digits number")])
+            # Call the edit request method
             edit_request(request_id)
+            # Show the menu options again
             menu_opt = do_menu()
 
 

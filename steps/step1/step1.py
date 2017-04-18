@@ -8,14 +8,21 @@ Written by B00319125
 Python version: 3
 LIBRARIES:
     Python Command Line Interface Tools (CLINT): $ pip3 install clint
+    Reference: https://github.com/kennethreitz/clint/
 
 """
 import os
 from random import randrange
 
-# Import the library CLINT
+# Import the module textui of the library 'clint' for easy handling of
+# inputs and outputs in the CLI output
 from clint.textui import prompt, puts, colored, indent
+# prompt: print an option prompt for handle a valid option
+# puts: custom print method
+# colored: allow give color to a output
+# indent: allow indent the text output
 
+# Initial state of the requests list
 requests = []
 
 
@@ -51,8 +58,12 @@ class Request():
         self._display_all()
 
     def _display_all(self):
-        os.system('clear')
+        """
+            Display all the data of the current request
+        """
+        os.system('clear')  # Clear the console
         title = "| Your information |"
+        # Creating the output and format it
         output = "  RequestID: {}\n"\
                  "  Name: {} {}\n"\
                  "  Password: {}\n"\
@@ -69,18 +80,32 @@ class Request():
                      self._module,
                      self._year,
                      self._campus)
+        # Create a header banner with the title to show a highlighted output
         header = '+' + '-' * (int(len(output) / 2) - 60) + title + '-' * \
             int((len(output) / 2) - 60) + '+'
+        # The header and footer banners are created calculating the lenth of
+        # the output
         footer = '+' + '-' * (len(header) - 2) + '+'
+        # Append all the available times in one string
         times_string = "    "
         for i in self._availables_times:
             times_string = times_string + "> " + i + '\n    '
+        # Put all the lines in one list
         lines = [header, output, times_string, footer]
+        # Join all
         card = '\n'.join(lines)
+        # Indent with 4 spaces the output
         with indent(4):
+            # Use of the context manager 'with' to use the indent method only
+            # in the line bellows
             puts(card)
 
     def _create_request(self):
+        """
+            This method allows handle all the input
+            and create a request
+        """
+        # Show the prompts for inputs
         self._fist_name = prompt.query("Input First Name: ")
         self._surname = prompt.query("Input Surname: ")
         self._password = prompt.query("Input Password: ")
@@ -95,6 +120,8 @@ class Request():
         # Handle N times availables
         puts(colored.yellow("Availables Times (Duplicates are silently ignored)"))
         opt = 'Yes'
+        # Repeat until the user no longer wants to enter more times
+        # If input a repeated time this will be ignored
         while opt == 'Yes':
             day = prompt.options(
                 "\nSelect a day option", self.to_clint_options(self._days))
@@ -106,11 +133,14 @@ class Request():
                 colored.green("Add another?"), self.to_clint_options(["Yes", "No"]))
 
     def to_clint_options(self, options):
-        """This function returns the dictionary for prompt options in
-        CLINT
+        """
+            This method only format a list to be
+            acceptable for the prompt.options method
 
-        Returns:
-            A Dictionary of options to clint prompt
+            Args:
+                A list of options
+            Returns:
+                A list of sets with prompt.options format
         """
         temp = dict(zip(range(1, len(options) + 1), options))
         opts = []
@@ -138,9 +168,11 @@ def main():
         Main fuction
     """
     opt = 'Yes'
+    # Repeat until the user not choose the 'Yes' option from the prompt
     while opt == 'Yes':
         request_id = generate_random()
         request = Request(request_id)
+        # Show a prompt rasking if want create another request
         opt = prompt.options(
             colored.green("Create another Request?"), request.to_clint_options(["Yes", "No"]))
 

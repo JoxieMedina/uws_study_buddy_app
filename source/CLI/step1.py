@@ -20,6 +20,7 @@ requests = []
 
 
 class Request():
+    
     def __init__(self, idrequest):
         # Setting the defaults values
         self._request_id = idrequest
@@ -127,8 +128,10 @@ def generate_random():
             A new valid 6 digits random number.
     """
     global requests
+
     new_id = 0  # use a distinguished, invalid value to start the loop
-    while new_id == 0 or new_id in requests:  # reject candidate ID if invalid or already exists
+    # reject candidate ID if invalid or already exists
+    while new_id == 0 or new_id in requests:
         new_id = randrange(1e5, 1e6)  # generate a candidate 6-digit number
     return new_id
 

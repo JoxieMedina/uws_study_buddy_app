@@ -67,7 +67,7 @@ class Request():
             "availables_times": '/'.join(self._availables_times)
         }
         set_storage_data(str(self._request_id), self._current_request)
-        self._display_restricted()
+        self._display_all()
         matches = self._find_matches()
         if matches:
             puts(colored.cyan(str(len(matches)) + " matches were found!"))

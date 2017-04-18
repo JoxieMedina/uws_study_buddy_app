@@ -13,7 +13,7 @@ LIBRARIES:
 import os
 from random import randrange
 import pickle
-
+import pprint as pp
 # Import the library CLINT
 from clint.textui import prompt, puts, colored, indent
 
@@ -64,7 +64,7 @@ class Request():
             "campus": self._campus,
             "availables_times": '/'.join(self._availables_times)
         })
-        self._display_restricted()
+        self._display_all()
 
     def _display_all(self):
         os.system('clear')
@@ -178,17 +178,19 @@ def get_storage_data(filename):
                 temp = pickle.load(storage)
         finally:
             pass
-    if temp == None:
+    if temp is None:
         return []
     return temp
 
 
 def set_storage_data(filename, data):
-    """This function find a local pickle file and returns the data
+    """
+    This function set or create a pickle file if is not found
+    a local pickle file and returns the data
 
     """
     # Saving Persistend data into a file
-    # The code snippet permits no worry about closing the file
+    # The with snippet permits no worry about closing the file
     with open(filename + ".pickle", mode="wb") as storage:
         return pickle.dump(data, storage)
 
@@ -216,6 +218,14 @@ def main():
         if menu_opt == "Create New Request":
             request_id = generate_random()
             request = Request(request_id)
+            # Getting the stored files contents
+            requests_file = get_storage_data("Requests")
+            request_created = get_storage_data(str(request_id))
+            # Print the stored files contents
+            puts(colored.blue("Request.pickle file content: \n"))
+            pp.pprint(requests_file)
+            puts(colored.blue(str(request_id) + ".pickle file content: \n"))
+            pp.pprint(request_created)
             menu_opt = prompt.options(
                 colored.green("\nUWS STUDY BUDDY"),
                 to_clint_options(["Create New Request", "Exit"]))

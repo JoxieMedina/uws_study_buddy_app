@@ -67,7 +67,7 @@ class Request():
             "availables_times": '/'.join(self._availables_times)
         }
         set_storage_data(str(self._request_id), self._current_request)
-        self._display_restricted()
+        self._display_all()
         matches = find_matches(self._current_request)
         if matches:
             puts(colored.cyan(str(len(matches)) + " matches were found!"))
@@ -335,7 +335,7 @@ def generate_random():
 
 def edit_request(_request_id):
     """
-
+        This method permits edit an existing request
     """
     # Static Dictionaries
     _availables_times = set()
@@ -417,6 +417,9 @@ def edit_request(_request_id):
 
 
 def do_menu():
+    """
+        this Method permits print the main menu of options
+    """
     return prompt.options(
         colored.green("Welcome to UWS STUDY BUDDY"),
         to_clint_options(["Create New Request", "Edit a Request", "Exit"]))
